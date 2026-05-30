@@ -1,5 +1,6 @@
 import torch
 
+
 class MultilayerPerceptron:
     """
     Perceptron multicapa de 3 capas segun el material del curso (Bishop, 2006).
@@ -126,6 +127,8 @@ class MultilayerPerceptron:
 
     # ------------------------------------------------------------------
     # Actualizacion de pesos — Ecuaciones (13) y (22) del material
+    # FIX: se normaliza por n para que alpha sea independiente del
+    #      tamanio del batch y el entrenamiento sea estable.
     # ------------------------------------------------------------------
 
     def update_weights(self, X):
@@ -135,9 +138,9 @@ class MultilayerPerceptron:
         X_aug  = torch.hstack([ones, X])           # (n, D+1)
         yo_aug = torch.hstack([ones, self.yo])     # (n, M+1)
 
-        # Gradientes acumulados sobre todas las muestras
-        grad_Ws = yo_aug.T @ self.delta_s          # (M+1, K)
-        grad_Wo = X_aug.T  @ self.delta_o          # (D+1, M)
+        # Gradientes promediados sobre todas las muestras  ← FIX
+        grad_Ws = (yo_aug.T @ self.delta_s) / n    # (M+1, K)
+        grad_Wo = (X_aug.T  @ self.delta_o) / n    # (D+1, M)
 
         # Actualizacion con momentum
         dWs = self.alpha * grad_Ws + self.gamma * self.dWs_prev
